@@ -1,0 +1,43 @@
+name: Compare eslint-plugin-react-refresh vs oxlint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  eslint:
+    name: ESLint (eslint-plugin-react-refresh)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install eslint eslint-plugin-react-refresh @typescript-eslint/parser
+      - name: Run ESLint
+        run: |
+          echo "=== should-error.tsx (expected: ERROR) ==="
+          npx eslint -c eslint.config.mjs should-error.tsx || true
+          echo ""
+          echo "=== correctly-errors.tsx (expected: ERROR) ==="
+          npx eslint -c eslint.config.mjs correctly-errors.tsx || true
+          echo ""
+          echo "=== correctly-passes.tsx (expected: PASS) ==="
+          npx eslint -c eslint.config.mjs correctly-passes.tsx || true
+
+  oxlint:
+    name: Oxlint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Oxlint
+        run: |
+          echo "=== should-error.tsx (expected: ERROR, actual: PASS ❌) ==="
+          npx oxlint@latest -c oxlint.config.json should-error.tsx || true
+          echo ""
+          echo "=== correctly-errors.tsx (expected: ERROR) ==="
+          npx oxlint@latest -c oxlint.config.json correctly-errors.tsx || true
+          echo ""
+          echo "=== correctly-passes.tsx (expected: PASS) ==="
+          npx oxlint@latest -c oxlint.config.json correctly-passes.tsx || true

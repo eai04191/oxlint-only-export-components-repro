@@ -9,5 +9,10 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "commonjs",
+  "dependencies": {
+    "eslint": "^10.0.3",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "typescript-eslint": "^8.57.1"
+  }
 }
