@@ -14,7 +14,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      - run: npm install eslint eslint-plugin-react-refresh @typescript-eslint/parser
+      - run: npm ci
       - name: Run ESLint
         run: |
           echo "=== should-error.tsx (expected: ERROR) ==="
@@ -31,13 +31,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
       - name: Run Oxlint
         run: |
           echo "=== should-error.tsx (expected: ERROR, actual: PASS ❌) ==="
-          npx oxlint@latest -c oxlint.config.json should-error.tsx || true
+          npx oxlint -c oxlint.config.json should-error.tsx || true
           echo ""
           echo "=== correctly-errors.tsx (expected: ERROR) ==="
-          npx oxlint@latest -c oxlint.config.json correctly-errors.tsx || true
+          npx oxlint -c oxlint.config.json correctly-errors.tsx || true
           echo ""
           echo "=== correctly-passes.tsx (expected: PASS) ==="
-          npx oxlint@latest -c oxlint.config.json correctly-passes.tsx || true
+          npx oxlint -c oxlint.config.json correctly-passes.tsx || true
