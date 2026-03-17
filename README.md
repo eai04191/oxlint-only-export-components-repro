@@ -2,29 +2,37 @@
 
 ## Problem
 
-When `allowConstantExport: true` is set, `react/only-export-components` permits **all** `export const` declarations without checking whether the exported value is actually a React component.
+When `allowConstantExport: true` is set, oxlint's `react/only-export-components` permits **all** `export const` declarations without checking whether the exported value is actually a React component.
 
-This means patterns like TanStack Router's `createFileRoute()` — which returns a non-component object — are silently allowed, even when the file also contains a non-exported component function.
-
-`eslint-plugin-react-refresh` correctly detects this case and reports an error.
+`eslint-plugin-react-refresh` correctly checks whether the value is a component and reports an error when it is not.
 
 ## Reproduction
 
 ```bash
-npx oxlint -c oxlint.config.json
+npm ci
+
+# oxlint: should-error.tsx is NOT reported (bug)
+npx oxlint -c oxlint.config.json should-error.tsx
+
+# eslint: should-error.tsx IS reported (correct)
+npx eslint -c eslint.config.mjs should-error.tsx
 ```
 
 ### Expected
 
 `should-error.tsx` should report an error because:
-- `export const Route = createFileRoute(...)({...})` is not a React component
-- `function RouteComponent()` is a non-exported component colocated in the same file
-
-This is the exact pattern that `eslint-plugin-react-refresh` detects.
+- `export const Route = createFileRoute(...)({...})` is not a React component (it's a function call returning a plain object)
+- `function RouteComponent()` is a non-exported component in the same file
 
 ### Actual
 
-`should-error.tsx` reports no error. Only `correctly-errors.tsx` is flagged.
+oxlint reports no error on `should-error.tsx`. ESLint correctly reports it.
+
+## Versions
+
+- oxlint: 1.56.0
+- eslint: 10.0.3
+- eslint-plugin-react-refresh: 0.5.2
 
 ## Config
 
@@ -49,6 +57,10 @@ export const Route = createFileRoute("/path")({
 function MyComponent() { ... }
 ```
 
-The `createFileRoute()` call returns a Route object, not a React component. When the component is defined inline in the same file, changes to non-component properties (like `loader`) won't trigger HMR correctly. The lint rule should warn about this so developers are aware of the HMR limitation.
+`createFileRoute()` returns a Route object, not a React component. When the component is defined inline in the same file, changes to non-component properties (like `loader`) won't trigger HMR correctly. The lint rule should warn about this.
 
 See: https://github.com/ArnaudBarre/eslint-plugin-react-refresh/releases/tag/v0.5.0
+
+## CI
+
+This repo includes a [GitHub Actions workflow](.github/workflows/lint.yml) that runs both ESLint and oxlint on the same files to demonstrate the difference.
